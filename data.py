@@ -12,7 +12,7 @@ from dataloader.visda2017 import VisDA2017
 from dataloader.domainnet import DomainNet
 
 
-def setup_data(config: Any):
+def setup_data(config: Any, is_test = False, few_shot_num = None):
     """Download datasets and create dataloaders
 
     Parameters
@@ -49,6 +49,10 @@ def setup_data(config: Any):
         idist.barrier()
 
     if config.dataset.name == "cifar10":
+
+        if is_test:
+            raise NotImplementedError("Cifar10 test not implemented.")
+
         train_dataset = torchvision.datasets.CIFAR10(
             root=config.data_path,
             train=True,
@@ -72,7 +76,6 @@ def setup_data(config: Any):
         else:
             raise NotImplementedError(f"{config.dataset.name} not implemented.")
         
-        
         train_dataset = dataset_cls(
             config.dataset.root, config.dataset.domain, transform=train_transform
         )
@@ -82,11 +85,29 @@ def setup_data(config: Any):
 
         assert len(train_dataset) == len(val_dataset)
 
-        # split the dataset with indices
-        indices = np.random.permutation(len(train_dataset))
-        num_train = int(len(train_dataset) * config.data.train_ratio)
-        train_dataset = Subset(train_dataset, indices[:num_train])
-        val_dataset = Subset(val_dataset, indices[num_train:])
+        if is_test: # few-shot on target domain
+            if few_shot_num is None:
+                raise ValueError("few_shot_num should be specified for test dataset.")
+
+            # cnt = [ [] for _ in range(val_dataset.num_classes) ] # CAN'T DO THIS, because task has been divied
+            cnt = [ [] for _ in range(config.dataset.num_classes) ]
+            for i, v in enumerate(val_dataset.targets):
+                if len(cnt[v]) < few_shot_num:
+                    cnt[v].append(i)
+            for i in cnt:
+                assert len(i) == few_shot_num
+            
+            # turn cnt into numpy array and flatten it
+            train_indices = np.array(cnt).flatten()
+            val_indices = np.array([i for i in range(len(val_dataset)) if i not in train_indices])
+            train_dataset = Subset(train_dataset, train_indices)
+            val_dataset = Subset(val_dataset, val_indices)
+        else:
+            # split the dataset with indices
+            indices = np.random.permutation(len(train_dataset))
+            num_train = int(len(train_dataset) * config.data.train_ratio)
+            train_dataset = Subset(train_dataset, indices[:num_train])
+            val_dataset = Subset(val_dataset, indices[num_train:])
 
     if local_rank == 0:
         # Ensure that only rank 0 download the dataset

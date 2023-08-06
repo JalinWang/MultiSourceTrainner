@@ -2,7 +2,7 @@ from models.classifier import Classifier
 from torchvision import models
 
 
-def setup_model(config, return_hidden=False):
+def setup_model(config, return_feat_only=False):
     
     name = config.model.name
 
@@ -16,5 +16,5 @@ def setup_model(config, return_hidden=False):
         backbone, 
         hidden_dim=config.model.hidden_dim,
         num_classes=config.dataset.num_classes,
-        return_hidden=return_hidden
+        return_feat_only=return_feat_only
     )

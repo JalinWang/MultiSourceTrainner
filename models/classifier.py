@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class Classifier(nn.Module):
-    def __init__(self, backbone, hidden_dim, num_classes, return_hidden=False):
+    def __init__(self, backbone, hidden_dim, num_classes, return_feat_only=False):
         super(Classifier, self).__init__()
 
         self.backbone = backbone
@@ -12,14 +12,15 @@ class Classifier(nn.Module):
         self.bn = nn.BatchNorm1d(hidden_dim)
         self.fc = nn.Linear(hidden_dim, num_classes)
 
-        self.forward = self.forward_with_hidden if return_hidden else self.forward_without_hidden
+        self.forward = self.forward_with_hidden if return_feat_only else self.forward_without_hidden
     
     def forward_with_hidden(self, x):
         x = self.backbone(x)
         x = self.bn(x)
-        hidden = x
-        x = self.fc(x)
-        return x, hidden
+        return x
+        # hidden = x
+        # x = self.fc(x)
+        # return x, hidden
     
     def forward_without_hidden(self, x):
         x = self.backbone(x)
