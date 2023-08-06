@@ -35,7 +35,7 @@ def run(local_rank: int, config: Any):
 
     # model, optimizer, loss function, device
     device = idist.device()
-    model = idist.auto_model(setup_model(config.model, config))
+    model = idist.auto_model(setup_model(config))
     optimizer = idist.auto_optim(optim.AdamW(model.parameters(), lr=config.lr))
     loss_fn = nn.CrossEntropyLoss().to(device=device)
 

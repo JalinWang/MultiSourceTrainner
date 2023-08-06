@@ -3,19 +3,22 @@ data_path: ./
 train_batch_size: 128
 eval_batch_size: 128
 num_workers: 12
-max_epochs: 200
+max_epochs: 3
 # train_epoch_length: 1000
 # eval_epoch_length: 1000
 lr: 0.0001
 use_amp: false
 debug: false
-model: resnet18
 filename_prefix: training
 n_saved: 2
 save_every_iters: 10000000
 patience: 3
 output_dir: ./logs
-log_every_iters: 10
+log_every_iters: 100
+
+model:
+  name: resnet18
+  hidden_dim: 64
 
 hydra:
   output_subdir: "."
@@ -26,8 +29,8 @@ data:
   train_ratio: 0.8
 
 defaults:
-  # - dataset: visda2017
-  - dataset: office-home
+  - dataset: visda2017
+  # - dataset: office-home
   # - dataset: domainnet
   # - dataset: cifar10
   - _self_  
