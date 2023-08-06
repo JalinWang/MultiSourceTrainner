@@ -92,8 +92,7 @@ def run(config: Any):
 
                 inputs = inputs.cuda()
                 # labels = labels.cuda()
-                
-                features_list.append(model(inputs).detach().cpu())
+                features_list.append(normalize(model(inputs).detach().cpu()))
                 if all_label_train is None:
                     labels_list.append(labels.detach().cpu())
             all_features_train[i, :, :] = torch.cat(features_list, dim=0)
@@ -177,7 +176,7 @@ def run(config: Any):
     print(f"\n\n*******get G*******")
     with torch.no_grad():
         target_feature = get_target_feature(alpha, all_features_train)
-        target_feature = normalize(target_feature)
+        # target_feature = normalize(target_feature) # already done in feature_list
 
         # gamma_f = target_feature.T@target_feature / target_feature.shape[0] # (hidden_dim, hidden_dim)
 
