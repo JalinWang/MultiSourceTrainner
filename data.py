@@ -91,7 +91,11 @@ def setup_data(config: Any, is_test = False, few_shot_num = None):
 
             # cnt = [ [] for _ in range(val_dataset.num_classes) ] # CAN'T DO THIS, because task has been divied
             cnt = [ [] for _ in range(config.dataset.num_classes) ]
-            for i, v in enumerate(val_dataset.targets):
+
+            indecies = np.random.permutation(len(val_dataset.targets))
+            # for i, v in enumerate(val_dataset.targets):
+            for i in indecies:
+                v = val_dataset.targets[i]
                 if len(cnt[v]) < few_shot_num:
                     cnt[v].append(i)
             for i in cnt:
@@ -102,7 +106,7 @@ def setup_data(config: Any, is_test = False, few_shot_num = None):
             val_indices = np.array([i for i in range(len(val_dataset)) if i not in train_indices])
 
             np.random.shuffle(val_indices) # np.random.randint() or sample
-            # val_indices = val_indices[:1000]
+            val_indices = val_indices[:2000]
 
             # print(val_indices[:100])
 
@@ -133,7 +137,8 @@ def setup_data(config: Any, is_test = False, few_shot_num = None):
     dataloader_train = DataLoader(
         train_dataset,
         batch_size=config.train_batch_size,
-        shuffle=True,
+        shuffle=False,
+        # shuffle=True,
         num_workers=config.num_workers,
     )
     dataloader_eval = DataLoader(

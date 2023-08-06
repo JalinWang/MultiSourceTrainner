@@ -69,6 +69,7 @@ def run(config: Any):
             model.eval()
             model.cuda()
 
+            assert len(dataloader_train) == 1
             print(f"extract features by {d}-trained model")
             for data in tqdm(dataloader_train):
                 # get the inputs
@@ -82,13 +83,13 @@ def run(config: Any):
                 sigma[i, :], g[:, :, i] = compute_max_corr(
                     model, inputs, labels, num_classes
                 )
-                res = weighted_network_output( # only one batch! so this is correct
+                res_ = weighted_network_output( # only one batch! so this is correct
                     model, sigma[i, :], g[:, :, i], inputs
                 )
                 
-                running_probs_train += res
+                running_probs_train += res_
                 
-                tqdm.write(f"acc: {(torch.argmax(res, dim=1) == labels.long()).float().mean().item()}")
+            print(f"acc: {(torch.argmax(res_, dim=1) == labels.long()).float().mean().item()}")
 
             r = 0
             for batch_index, data in enumerate(tqdm(dataloader_test)):
