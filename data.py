@@ -129,13 +129,14 @@ def setup_data(config: Any, is_test = False, few_shot_num = None):
         # Ensure that only rank 0 download the dataset
         idist.barrier()
 
-    dataloader_train = idist.auto_dataloader(
+    # dataloader_train = idist.auto_dataloader(
+    dataloader_train = DataLoader(
         train_dataset,
         batch_size=config.train_batch_size,
         shuffle=True,
         num_workers=config.num_workers,
     )
-    dataloader_eval = idist.auto_dataloader(
+    dataloader_eval = DataLoader(
         val_dataset,
         batch_size=config.eval_batch_size,
         shuffle=False,

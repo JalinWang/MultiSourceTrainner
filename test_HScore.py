@@ -1,3 +1,4 @@
+import gc
 import glob
 import os
 from pprint import pformat
@@ -49,7 +50,7 @@ def run(config: Any):
 
     num_classes = config.dataset.num_classes
 
-    domains = config.dataset.domains[:4]
+    domains = config.dataset.domains
     target_domain = config.dataset.domain
     target_domain_index = -1
 
@@ -95,6 +96,10 @@ def run(config: Any):
                 all_label_train = torch.cat(labels_list, dim=0)
     # stop with torch.no_grad()
 
+    del inputs, labels, data
+    del dataloader_train
+    del model
+    del features_list, labels_list
 
 
     # compute H-score and validation accuracy
@@ -148,7 +153,7 @@ def run(config: Any):
         h_score.backward()
         optimizer.step()
 
-        print(f"epoch {epoch}: h_score {h_score.item()}")
+        # print(f"epoch {epoch}: h_score {h_score.item()}")
 
         # alpha.requires_grad = False
         # alpha[alpha < 0] = 0
@@ -197,6 +202,9 @@ def run(config: Any):
             torch.inverse(gamma_f) @ (ce_f_s.permute((1,2,0))@alpha).T
         ).T
 
+    del all_features_train, ce_f_s, ce_f_s_list, gamma_f
+    torch.cuda.empty_cache()
+    gc.collect()
 
     print(f"\n\n*******start test on {config.dataset.domain}*******")
     with torch.no_grad():
@@ -205,6 +213,8 @@ def run(config: Any):
         score = f_norm @ g_norm.T
         acc_test = (torch.argmax(score, dim=1) == all_label_train).sum().item() / len(all_label_train)
         print("Train accuracy: ", acc_test)
+
+        del g_norm, f_norm, score, target_feature, all_label_train
 
         test_features = torch.zeros(len(dataloader_test.dataset), config.model.hidden_dim).cuda()
         test_label = None
@@ -232,13 +242,18 @@ def run(config: Any):
             test_features += torch.cat(features_list, dim=0)*alpha[i]
             if test_label is None:
                 test_label = torch.cat(labels_list, dim=0)
+
+        del model, features_list, labels_list, features, labels, data, inputs
         g_norm = normalize(g.cuda())
         f_norm = normalize(test_features.cuda())
+        del test_features,
         score = f_norm @ g_norm.T
         print("Correct num: ", (torch.argmax(score, dim=1) == test_label.cuda()).sum().cpu().item())
         print("Incorrect num: ", (torch.argmax(score, dim=1) != test_label.cuda()).sum().cpu().item())
         acc_test = (torch.argmax(score, dim=1) == test_label.cuda()).sum().cpu().item() / len(dataloader_test.dataset)
         print(f"Test accuracy: {acc_test} ; test sample: {len(dataloader_test.dataset)}")
+    print(f"*******done {config.dataset.domain} of {domains}*******")
+    print("#########################################################\n\n\n")
 
 
 # main entrypoint
