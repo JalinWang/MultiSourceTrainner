@@ -121,6 +121,7 @@ def run(config: Any):
         target_feature += (1 - alpha.sum()) * all_features[i, :, :]
         return target_feature
     
+    # print("original H-score: dif = torch.trace(torch.pinverse(Covf, rcond=1e-15) @ Covg)")
     def get_score(features, labels):
         Covf = torch.cov(features.T)  # (hidden_dim, hidden_dim)
         label_choice = torch.unique(labels)
@@ -130,7 +131,11 @@ def run(config: Any):
             Ef_z = torch.mean(fl, dim=0) # (hidden_dim)
             g[labels == z] = Ef_z
         Covg = torch.cov(g.T)
+
         dif = torch.trace(Covg) / torch.trace(Covf)
+        # orignal hscore
+        # dif = torch.trace(torch.pinverse(Covf, rcond=1e-15) @ Covg)
+
         return dif
     
     alpha = torch.ones(len(domains) - 1) / len(domains)
