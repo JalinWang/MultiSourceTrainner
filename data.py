@@ -131,7 +131,7 @@ def setup_data(config: Any, is_test = False, few_shot_num = None):
 
             np.random.shuffle(val_indices) # np.random.randint() or sample
             if config.val_sample_num is not None:
-                val_indices = val_indices[:2000]
+                val_indices = val_indices[:config.val_sample_num]
 
             # print(val_indices[:100])
 
