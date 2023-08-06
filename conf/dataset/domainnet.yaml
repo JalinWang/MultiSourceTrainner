@@ -1,0 +1,6 @@
+root: /data/wjn/academic/Causality/_dataset/DomainNet
+name: domainnet
+domain: t_task1
+domains: ["t_task0", "t_task1", "t_task2", "t_task3", "v_task0", "v_task1", "v_task2", "v_task3",]
+num_classes: 3
+# 12 classes, 4 task, 3 classes per task

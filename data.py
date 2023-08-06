@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader, Subset
 
 from dataloader.officehome import OfficeHome
 from dataloader.visda2017 import VisDA2017
+from dataloader.domainnet import DomainNet
 
 
 def setup_data(config: Any):
@@ -65,6 +66,8 @@ def setup_data(config: Any):
             dataset_cls = OfficeHome
         elif config.dataset.name == "visda2017":
             dataset_cls = VisDA2017
+        elif config.dataset.name == "domainnet":
+            dataset_cls = DomainNet
 
         else:
             raise NotImplementedError(f"{config.dataset.name} not implemented.")
