@@ -72,7 +72,8 @@ def resume_from(
         checkpoint = torch.load(checkpoint_fp, map_location="cpu")
 
     Checkpoint.load_objects(to_load=to_load, checkpoint=checkpoint, strict=strict)
-    logger.info("Successfully resumed from a checkpoint: %s", checkpoint_fp)
+    if logger is not None:
+        logger.info("Successfully resumed from a checkpoint: %s", checkpoint_fp)
 
 
 def setup_output_dir(config: Any, rank: int) -> Path:

@@ -35,7 +35,8 @@ def get_model(config, domain, logger):
     to_save_eval = {"model": model}
     resume_from(to_save_eval, checkpoint_path, logger)
 
-    print(f"checkpoint loaded from {checkpoint_path}")
+    if logger is not None:
+        logger.info(f"checkpoint loaded from {checkpoint_path}")
     return model
 
 
@@ -216,32 +217,29 @@ def run(config: Any):
 
         del g_norm, f_norm, score, target_feature, all_label_train
 
-        test_features = torch.zeros(len(dataloader_test.dataset), config.model.hidden_dim).cuda()
-        test_label = None
+        # test_features = torch.zeros(len(dataloader_test.dataset), config.model.hidden_dim).cuda()
+        features_list = []
+        labels_list = []
         acc_test = 0
-        for i, d in enumerate(domains):
-            if d == config.dataset.domain:
-                continue
-            print(f"domain: {d}")
-            
-            model = get_model(config, d, logger).cuda().eval()
 
-            print(f"extract features by {d}-trained model")
-            features_list = []
-            labels_list = []
-            for data in tqdm(dataloader_test):
-                inputs, labels = data
-                inputs = inputs.cuda()
+        for data in tqdm(dataloader_test):
+            inputs, labels = data
+            inputs = inputs.cuda()
+
+            labels_list.append(labels.detach().cpu())
+            features_list.append(torch.zeros(inputs.shape[0], config.model.hidden_dim).cuda())
+
+            for i, d in enumerate(domains):
+            
+                model = get_model(config, d, None).cuda().eval()
 
                 features = model(inputs).detach()
                 features = normalize(features)
                 
-                features_list.append(features)
-                if test_label is None:
-                    labels_list.append(labels.detach().cpu())
-            test_features += torch.cat(features_list, dim=0)*alpha[i]
-            if test_label is None:
-                test_label = torch.cat(labels_list, dim=0)
+                features_list[-1] += features * alpha[i]
+
+        test_features = torch.cat(features_list, dim=0)
+        test_label = torch.cat(labels_list, dim=0)
 
         del model, features_list, labels_list, features, labels, data, inputs
         g_norm = normalize(g.cuda())
