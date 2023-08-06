@@ -69,25 +69,26 @@ def run(config: Any):
             model.eval()
             model.cuda()
 
-            assert len(dataloader_train) == 1
             print(f"extract features by {d}-trained model")
-            for data in tqdm(dataloader_train):
-                # get the inputs
-                inputs, labels = data
 
-                inputs = inputs.cuda()
-                labels = labels.cuda()
+            data_list = [data for data in dataloader_train]
+            all_data = list(zip(*data_list))
+            inputs = torch.cat(all_data[0], dim=0)
+            labels = torch.cat(all_data[1], dim=0)
+            
+            inputs = inputs.cuda()
+            labels = labels.cuda()
 
-                # sigma = torch.zeros((len(domains), config.model.hidden_dim))
-                # g = torch.zeros((num_classes, config.model.hidden_dim, len(domains)))
-                sigma[i, :], g[:, :, i] = compute_max_corr(
-                    model, inputs, labels, num_classes
-                )
-                res_ = weighted_network_output( # only one batch! so this is correct
-                    model, sigma[i, :], g[:, :, i], inputs
-                )
-                
-                running_probs_train += res_
+            # sigma = torch.zeros((len(domains), config.model.hidden_dim))
+            # g = torch.zeros((num_classes, config.model.hidden_dim, len(domains)))
+            sigma[i, :], g[:, :, i] = compute_max_corr(
+                model, inputs, labels, num_classes
+            )
+            res_ = weighted_network_output( # only one batch! so this is correct
+                model, sigma[i, :], g[:, :, i], inputs
+            )
+            
+            running_probs_train += res_
                 
             print(f"acc: {(torch.argmax(res_, dim=1) == labels.long()).float().mean().item()}")
 
