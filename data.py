@@ -100,6 +100,22 @@ def setup_data(config: Any, is_test = False, few_shot_num = None):
             # turn cnt into numpy array and flatten it
             train_indices = np.array(cnt).flatten()
             val_indices = np.array([i for i in range(len(val_dataset)) if i not in train_indices])
+
+            np.random.shuffle(val_indices) # np.random.randint() or sample
+            # val_indices = val_indices[:1000]
+
+            # print(val_indices[:100])
+
+            # print(val_indices[:100])
+            # for i in val_indices[:100]:
+            #     print(val_dataset.targets[i], end=" ")
+            # from collections import Counter
+            # cnt = Counter(val_dataset.targets[i] for i in val_indices[:1000])
+            # print(cnt)
+            # cnt = Counter(val_dataset.targets)
+            # print(cnt)
+            # exit(0)
+ 
             train_dataset = Subset(train_dataset, train_indices)
             val_dataset = Subset(val_dataset, val_indices)
         else:
