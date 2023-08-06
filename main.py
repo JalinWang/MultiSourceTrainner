@@ -112,7 +112,7 @@ def run(local_rank: int, config: Any):
 # main entrypoint
 def main():
     config = setup_config()
-    with idist.Parallel(config.backend) as p:
+    with idist.Parallel("nccl") as p:
         p.run(run, config=config)
 
 

@@ -21,13 +21,6 @@ from ignite.utils import setup_logger
 def get_default_parser():
     parser = ArgumentParser()
     parser.add_argument("config", type=Path, help="Config file path")
-    parser.add_argument(
-        "--backend",
-        default=None,
-        choices=["nccl", "gloo"],
-        type=str,
-        help="DDP backend",
-    )
     return parser
 
 
@@ -109,7 +102,7 @@ def setup_output_dir(config: Any, rank: int) -> Path:
     """Create output folder."""
     if rank == 0:
         now = datetime.now().strftime("%Y%m%d-%H%M%S")
-        name = f"{now}-backend-{config.backend}-lr-{config.lr}"
+        name = f"{now}-lr-{config.lr}"
         path = Path(config.output_dir, name)
         path.mkdir(parents=True, exist_ok=True)
         config.output_dir = path.as_posix()
