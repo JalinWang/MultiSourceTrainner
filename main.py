@@ -1,3 +1,4 @@
+import os
 from pprint import pformat
 from typing import Any
 
@@ -11,6 +12,9 @@ from models import setup_model
 from torch import nn, optim
 from trainers import setup_evaluator, setup_trainer
 from utils import *
+
+import hydra
+from omegaconf import DictConfig, OmegaConf
 
 
 def run(local_rank: int, config: Any):
@@ -50,7 +54,7 @@ def run(local_rank: int, config: Any):
     # print training configurations
     logger = setup_logging(config)
     logger.info("Configuration: \n%s", pformat(vars(config)))
-    (config.output_dir / "config-lock.yaml").write_text(yaml.dump(config))
+    (config.output_dir / "config-lock.yaml").write_text(yaml.dump(OmegaConf.to_yaml(config)))
     trainer.logger = evaluator.logger = logger
 
     # setup ignite handlers
@@ -110,11 +114,16 @@ def run(local_rank: int, config: Any):
 
 
 # main entrypoint
-def main():
-    config = setup_config()
+@hydra.main(version_base=None, config_path="conf", config_name="config")    
+def main(cfg : DictConfig) -> None:
+    print(OmegaConf.to_yaml(cfg))
     with idist.Parallel("nccl") as p:
-        p.run(run, config=config)
+        p.run(run, config=cfg)
 
 
 if __name__ == "__main__":
+
+    # CUBLAS_WORKSPACE_CONFIG=:4096:8
+    os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8" 
+
     main()
