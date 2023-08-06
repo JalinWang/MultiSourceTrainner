@@ -174,12 +174,13 @@ def run(config: Any):
     print(f"\n\n*******get G*******")
     with torch.no_grad():
         def normalize(features):
+            # return (features - features.mean(axis=0))
             return (features - features.mean(axis=0)) / features.std(axis=0)
         
         target_feature = get_target_feature(alpha, all_features_train)
         target_feature = normalize(target_feature)
 
-        gamma_f = target_feature.T@target_feature / target_feature.shape[0]
+        # gamma_f = target_feature.T@target_feature / target_feature.shape[0] # (hidden_dim, hidden_dim)
 
         def get_conditional_exp(feature, label, num_classes):
             "calculate conditional expectation of fx"
@@ -191,35 +192,29 @@ def run(config: Any):
             
             return ce_f
 
-        # ce_f_s = torch.zeros((len(domains), num_classes, target_feature.shape[1]))
-        ce_f_s_list = [
-            get_conditional_exp(
-                label=all_label_train,
-                feature=all_features_train[i, :, :],
-                num_classes=num_classes
-            ) for i in range(len(domains))
-        ]
-        ce_f_s = torch.stack(ce_f_s_list, dim=0)
+        ce_f = get_conditional_exp(
+            label=all_label_train,
+            feature=target_feature,
+            num_classes=num_classes
+        )  # (num_classes, hidden_dim)
 
         # torch.permute = np.transpose ; torch.transpose = np.swapaxes; torch.mm = np.dot ; torch.inverse = np.linalg.inv; 
-        # g = torch.inverse(gamma_f).mm((ce_f_s.permute((1,2,0)).mm(alpha)).T).T
-        g = (
-            torch.inverse(gamma_f) @ (ce_f_s.permute((1,2,0))@alpha).T
-        ).T
+        # g = (torch.inverse(gamma_f) @ (ce_f_s.permute((1,2,0))@alpha).T).T
+        # g = ( torch.inverse(gamma_f) @ ce_f.T ).T # (hidden_dim, num_classes).T
+        g = ce_f
 
-    del all_features_train, ce_f_s, ce_f_s_list, gamma_f
+
+    del all_features_train,
     torch.cuda.empty_cache()
     gc.collect()
 
     print(f"\n\n*******start test on {config.dataset.domain}*******")
     with torch.no_grad():
-        g_norm = normalize(g)
-        f_norm = normalize(target_feature)
-        score = f_norm @ g_norm.T
+        score = target_feature @ g.T
         acc_test = (torch.argmax(score, dim=1) == all_label_train).sum().item() / len(all_label_train)
         print("Train accuracy: ", acc_test)
 
-        del g_norm, f_norm, score, target_feature, all_label_train
+        del score, target_feature, all_label_train
 
         # test_features = torch.zeros(len(dataloader_test.dataset), config.model.hidden_dim).cuda()
         features_list = []
@@ -246,7 +241,8 @@ def run(config: Any):
         test_label = torch.cat(labels_list, dim=0)
 
         del model, features_list, labels_list, features, labels, data, inputs
-        g_norm = normalize(g.cuda())
+        # g_norm = normalize(g.cuda())
+        g_norm = g.cuda()
         f_norm = normalize(test_features.cuda())
         del test_features,
         score = f_norm @ g_norm.T
