@@ -59,9 +59,8 @@ def run(config: Any):
         if d == target_domain:
             target_domain_index = i
             break
-    assert target_domain_index != -1
-
-    del domains[target_domain_index]
+    if target_domain_index != -1:
+        del domains[target_domain_index]
 
     # domains = ["v_task2", "v_task1"]
     # source_domains = [i for i in config.dataset.domains if i != config.dataset.domain]

@@ -31,7 +31,8 @@ def run(config: Any):
 
     num_classes = config.dataset.num_classes
 
-    domains = config.dataset.domains[:4]
+    domains = config.dataset.domains
+    # domains = config.dataset.domains[:4]
     # domains = ["v_task2", "v_task1"]
 
     # source_domains = [i for i in config.dataset.domains if i != config.dataset.domain]
