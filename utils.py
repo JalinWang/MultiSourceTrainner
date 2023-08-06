@@ -27,8 +27,8 @@ def log_metrics(engine: Engine, tag: str) -> None:
     tag
         a string to add at the start of output.
     """
-    metrics_format = "{0} [{1}/{2}]: {3}".format(
-        tag, engine.state.epoch, engine.state.iteration, engine.state.metrics
+    metrics_format = "{0} [{1}/{2}]: {3} - metric: {4}".format(
+        tag, engine.state.epoch, engine.state.max_epochs, engine.state.iteration, engine.state.metrics
     )
     engine.logger.info(metrics_format)
 

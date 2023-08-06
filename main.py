@@ -11,6 +11,7 @@ from ignite.utils import manual_seed
 from models import setup_model
 from torch import nn, optim
 from trainers import setup_evaluator, setup_trainer
+from ignite.engine import create_supervised_evaluator, create_supervised_trainer
 from utils import *
 
 import hydra
@@ -38,17 +39,16 @@ def run(local_rank: int, config: Any):
     trainer = setup_trainer(
         config, model, optimizer, loss_fn, device, dataloader_train.sampler
     )
-    evaluator = setup_evaluator(config, model, device)
+    # trainer = create_supervised_trainer(model, optimizer, loss_fn, device)
 
-    # attach metrics to evaluator
     accuracy = Accuracy(device=device)
-    metrics = {
+    val_metrics = {
         "eval_accuracy": accuracy,
         "eval_loss": Loss(loss_fn, device=device),
-        "eval_error": (1.0 - accuracy) * 100,
     }
-    for name, metric in metrics.items():
-        metric.attach(evaluator, name)
+    evaluator = create_supervised_evaluator(
+        model, metrics=val_metrics, device=device, amp_mode="amp" if config.use_amp else None
+    )
 
     # setup engines logger with python logging
     # print training configurations
@@ -85,19 +85,18 @@ def run(local_rank: int, config: Any):
     # for evaluation stats
     @trainer.on(Events.EPOCH_COMPLETED(every=1))
     def _():
-        evaluator.run(dataloader_eval, epoch_length=config.eval_epoch_length)
+        evaluator.run(dataloader_eval)
         log_metrics(evaluator, "eval")
 
     # let's try run evaluation first as a sanity check
     @trainer.on(Events.STARTED)
     def _():
-        evaluator.run(dataloader_eval, epoch_length=config.eval_epoch_length)
+        evaluator.run(dataloader_eval)
 
     # setup if done. let's run the training
     trainer.run(
         dataloader_train,
         max_epochs=config.max_epochs,
-        epoch_length=config.train_epoch_length,
     )
     # close logger
     if rank == 0:
@@ -120,6 +119,7 @@ def run(local_rank: int, config: Any):
 def main(cfg : DictConfig) -> None:
     print(OmegaConf.to_yaml(cfg))
     with idist.Parallel("nccl") as p:
+    # with idist.Parallel("gloo") as p:
         p.run(run, config=cfg)
 
 
