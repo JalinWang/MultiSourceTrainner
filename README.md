@@ -47,24 +47,22 @@ torchrun \
 
 ```sh
 torchrun \
-  --nproc_per_node 2 \
-  --nnodes 5 \
+  --nproc_per_node 4 \
+  --nnodes 2 \
   --node_rank 0 \
   --master_addr 127.0.0.1 \
   --master_port 8080 \
-  main.py \
-  --backend nccl
+  main.py config.yaml --backend nccl
 ```
 
 - Execute on worker nodes
 
 ```sh
 torchrun \
-  --nproc_per_node 2 \
-  --nnodes 5 \
+  --nproc_per_node 4 \
+  --nnodes 2 \
   --node_rank <node_rank> \
   --master_addr 127.0.0.1 \
   --master_port 8080 \
-  main.py \
-  --backend nccl
+  main.py config.yaml --backend nccl
 ```
