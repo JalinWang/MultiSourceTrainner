@@ -1,0 +1,1 @@
+python main.py --multirun dataset.domain=t_task0,t_task1,t_task2,t_task3,v_task0,v_task1,v_task2,v_task3

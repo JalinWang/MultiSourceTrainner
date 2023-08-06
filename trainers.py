@@ -36,7 +36,8 @@ def setup_trainer(
             "epoch": engine.state.epoch,
             "train_loss": train_loss,
         }
-        return {"train_loss": train_loss}
+        # return {"train_loss": train_loss}
+        return train_loss
 
 
     trainer = DeterministicEngine(train_function)

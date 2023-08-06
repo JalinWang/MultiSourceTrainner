@@ -1,0 +1,28 @@
+dataset:
+  root: /data/wjn/academic/Causality/_dataset/OfficeHome
+  name: office-home
+  domain: A
+  domains:
+  - A
+  - C
+  - P
+  - R
+  num_classes: 65
+seed: 2023
+data_path: ./
+train_batch_size: 64
+eval_batch_size: 64
+num_workers: 12
+max_epochs: 50
+lr: 0.0001
+use_amp: false
+debug: false
+model: resnet18
+filename_prefix: training
+n_saved: 2
+save_every_iters: 2000
+patience: 10
+output_dir: ./logs
+log_every_iters: 10
+data:
+  train_ratio: 0.8

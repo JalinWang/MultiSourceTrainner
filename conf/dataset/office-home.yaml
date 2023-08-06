@@ -1,0 +1,5 @@
+root: /data/wjn/academic/Causality/_dataset/OfficeHome
+name: office-home
+domain: A
+domains: ["A", "C", "P", "R"]
+num_classes: 65

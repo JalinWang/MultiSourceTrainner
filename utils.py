@@ -79,7 +79,7 @@ def setup_output_dir(config: Any, rank: int) -> Path:
     """Create output folder."""
     if rank == 0:
         now = datetime.now().strftime("%Y%m%d-%H%M%S")
-        name = f"{now}-lr-{config.lr}"
+        name = f"{now}-{config.dataset.name}-{config.dataset.domain}"
         path = Path(config.output_dir, name)
         path.mkdir(parents=True, exist_ok=True)
         config.output_dir = path.as_posix()
@@ -150,7 +150,7 @@ def setup_handlers(
         return -engine.state.metrics["eval_loss"]
 
     es = EarlyStopping(config.patience, score_fn, trainer)
-    evaluator.add_event_handler(Events.EPOCH_COMPLETED, es)
+    # evaluator.add_event_handler(Events.EPOCH_COMPLETED, es)
     return ckpt_handler_train, ckpt_handler_eval
 
 
@@ -161,6 +161,6 @@ def setup_exp_logging(config, trainer, optimizers, evaluators):
         trainer,
         optimizers,
         evaluators,
-        config.log_every_iters,
+        1,
     )
     return logger
