@@ -87,7 +87,7 @@ def setup_output_dir(config: Any, rank: int) -> Path:
     return Path(idist.broadcast(config.output_dir, src=0))
 
 
-def setup_logging(config: Any) -> Logger:
+def setup_logging(logger_name, config: Any) -> Logger:
     """Setup logger with `ignite.utils.setup_logger()`.
 
     Parameters
@@ -103,9 +103,8 @@ def setup_logging(config: Any) -> Logger:
     green = "\033[32m"
     reset = "\033[0m"
     logger = setup_logger(
-        name=f"{green}[ignite]{reset}",
+        name=f"{green}[{logger_name}]{reset}",
         level=logging.DEBUG if config.debug else logging.INFO,
-        format="%(name)s: %(message)s",
         filepath=config.output_dir / "training-info.log",
     )
     return logger

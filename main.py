@@ -52,10 +52,12 @@ def run(local_rank: int, config: Any):
 
     # setup engines logger with python logging
     # print training configurations
-    logger = setup_logging(config)
+    logger = setup_logging("ignite", config)
     logger.info("Configuration: \n%s", pformat(vars(config)))
     (config.output_dir / "config-lock.yaml").write_text(yaml.dump(OmegaConf.to_yaml(config)))
-    trainer.logger = evaluator.logger = logger
+
+    trainer.logger = setup_logging("trainer", config)
+    evaluator.logger = setup_logging("evaluator", config)
 
     # setup ignite handlers
     to_save_train = {"model": model, "optimizer": optimizer, "trainer": trainer}
