@@ -18,6 +18,9 @@ log_every_iters: 100
 
 few_shot_num: 10
 
+# val_sample_num: null
+val_sample_num: 2000
+
 model:
   name: resnet18
   hidden_dim: 64

@@ -106,7 +106,8 @@ def setup_data(config: Any, is_test = False, few_shot_num = None):
             val_indices = np.array([i for i in range(len(val_dataset)) if i not in train_indices])
 
             np.random.shuffle(val_indices) # np.random.randint() or sample
-            val_indices = val_indices[:2000]
+            if config.val_sample_num is not None:
+                val_indices = val_indices[:2000]
 
             # print(val_indices[:100])
 

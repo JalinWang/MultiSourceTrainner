@@ -40,6 +40,11 @@ def get_model(config, domain, logger):
     return model
 
 
+def normalize(features):
+    # return (features - features.mean(axis=0))
+    return (features - features.mean(axis=0)) / features.std(axis=0)
+
+
 def run(config: Any):
     # make a certain seed
     manual_seed(config.seed)
@@ -152,7 +157,6 @@ def run(config: Any):
         optimizer.zero_grad()
 
         target_feature = get_target_feature_train(alpha, all_features_train)
-        # target_feature = get_target_feature(alpha, all_features_train)
         h_score = -get_score(target_feature, all_label_train)
 
         h_score.backward()
@@ -170,13 +174,8 @@ def run(config: Any):
     print(f"final alpha: {alpha}")
     
 
-
     print(f"\n\n*******get G*******")
     with torch.no_grad():
-        def normalize(features):
-            # return (features - features.mean(axis=0))
-            return (features - features.mean(axis=0)) / features.std(axis=0)
-        
         target_feature = get_target_feature(alpha, all_features_train)
         target_feature = normalize(target_feature)
 
@@ -192,11 +191,7 @@ def run(config: Any):
             
             return ce_f
 
-        ce_f = get_conditional_exp(
-            label=all_label_train,
-            feature=target_feature,
-            num_classes=num_classes
-        )  # (num_classes, hidden_dim)
+        ce_f = get_conditional_exp( label=all_label_train, feature=target_feature, num_classes=num_classes )  # (num_classes, hidden_dim)
 
         # torch.permute = np.transpose ; torch.transpose = np.swapaxes; torch.mm = np.dot ; torch.inverse = np.linalg.inv; 
         # g = (torch.inverse(gamma_f) @ (ce_f_s.permute((1,2,0))@alpha).T).T
