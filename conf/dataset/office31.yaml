@@ -1,0 +1,5 @@
+root: /data/wjn/academic/Causality/_dataset/office31
+name: office31
+domain: amazon
+domains: ["amazon", "webcam", "dslr"]
+num_classes: 31

@@ -1,0 +1,5 @@
+root: /data/wjn/academic/Causality/_dataset/office-caltech
+name: office-caltech
+domain: amazon
+domains: ["amazon", "webcam", "dslr", "caltech"]
+num_classes: 10

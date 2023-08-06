@@ -3,7 +3,7 @@ data_path: ./
 train_batch_size: 256
 eval_batch_size: 256
 num_workers: 12
-max_epochs: 3
+max_epochs: 100
 # train_epoch_length: 1000
 # eval_epoch_length: 1000
 lr: 0.0001
@@ -13,8 +13,8 @@ filename_prefix: training
 n_saved: 2
 save_every_iters: 10000000
 patience: 3
-output_dir: ./logs
-log_every_iters: 100
+output_dir: ./logs_office31
+log_every_iters: 1 # office31: 2k; office-caltech: 900
 
 few_shot_num: 10
 
@@ -34,8 +34,10 @@ data:
   train_ratio: 0.8
 
 defaults:
-  - dataset: visda2017
-  # - dataset: office-home
+  - dataset: office-caltech
+  # - dataset: office31
+  # - dataset: visda2017
+  # - dataset: officehome
   # - dataset: domainnet
   # - dataset: cifar10
   - _self_  

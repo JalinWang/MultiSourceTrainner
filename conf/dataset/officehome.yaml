@@ -1,0 +1,5 @@
+root: /data/wjn/academic/Causality/_dataset/OfficeHome
+name: officehome
+domain: art
+domains: ["art", "clipart", "product", "real"]
+num_classes: 65

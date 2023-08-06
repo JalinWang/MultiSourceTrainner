@@ -93,16 +93,10 @@ class DomainNet(ImageList):
                'whale', 'wheel', 'windmill', 'wine_bottle', 'wine_glass', 'wristwatch', 'yoga', 'zebra', 'zigzag']
 
     def __init__(self, root: str, task: str, split: Optional[str] = 'train', download: Optional[float] = False, **kwargs):
-        # assert task in self.image_list
-        # assert split in ['train', 'test']
-        # data_list_file = os.path.join(root, "image_list", "{}_{}.txt".format(self.image_list[task], split))
-        # print("loading {}".format(data_list_file))
-
-        download = True
-        if download:
-            list(map(lambda args: download_data(root, *args), self.download_list))
-        else:
-            list(map(lambda args: check_exits(root, args[0]), self.download_list))
+        assert task in self.image_list
+        assert split in ['train', 'test']
+        data_list_file = os.path.join(root, "image_list", "{}_{}.txt".format(self.image_list[task], split))
+        print("loading {}".format(data_list_file))
 
         super(DomainNet, self).__init__(root, DomainNet.CLASSES, data_list_file=data_list_file, **kwargs)
 

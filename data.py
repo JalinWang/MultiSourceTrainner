@@ -7,11 +7,6 @@ import torchvision
 from torchvision import transforms
 from torch.utils.data import DataLoader, Subset
 
-from dataloader.officehome import OfficeHome
-from dataloader.visda2017 import VisDA2017
-from dataloader.domainnet import DomainNet
-
-
 def setup_data(config: Any, is_test = False, few_shot_num = None):
     """Download datasets and create dataloaders
 
@@ -66,15 +61,44 @@ def setup_data(config: Any, is_test = False, few_shot_num = None):
             transform=test_transform,
         )
     else:
-        if config.dataset.name == "office-home":
-            dataset_cls = OfficeHome
-        elif config.dataset.name == "visda2017":
-            dataset_cls = VisDA2017
-        elif config.dataset.name == "domainnet":
-            dataset_cls = DomainNet
+        name = config.dataset.name
+        name = name.replace("-", "")
+        print(name)
+        # # # https://python3-cookbook.readthedocs.io/zh_CN/latest/c09/p23_executing_code_with_local_side_effects.html
+        # loc = locals()
+        # exec(f"from dataloader/{ablation_method} import train")
+        # train = loc["train"]
 
-        else:
-            raise NotImplementedError(f"{config.dataset.name} not implemented.")
+        
+        # dataset_module = __import__(f"dataloader.{config.dataset.name}") #!! can't !!  https://docs.python.org/3/library/importlib.html#importlib.__import__
+        import importlib
+        dataset_module = importlib.import_module(f"dataloader.{name}")
+        # https://stackoverflow.com/a/58671549
+        namespace = vars(dataset_module)
+        public = (name for name in namespace if name[:1] != "_")
+        
+        # https://stackoverflow.com/questions/9542738/find-a-value-in-a-list
+        # matches = (x for x in lst if x > 6)
+        # matches = filter(fulfills_some_condition, lst)
+        
+        matches = [n for n in public if name.lower() == n.lower()]
+        print(matches)
+        assert len(matches) == 1
+        dataset_cls = getattr(dataset_module, matches[0])
+        
+
+        # from dataloader.officehome import OfficeHome
+        # from dataloader.visda2017 import VisDA2017
+        # from dataloader.domainnet import DomainNet
+
+        # if config.dataset.name == "office-home":
+        #     dataset_cls = OfficeHome
+        # elif config.dataset.name == "visda2017":
+        #     dataset_cls = VisDA2017
+        # elif config.dataset.name == "domainnet":
+        #     dataset_cls = DomainNet
+        # else:
+        #     raise NotImplementedError(f"{config.dataset.name} not implemented.")
         
         train_dataset = dataset_cls(
             config.dataset.root, config.dataset.domain, transform=train_transform
