@@ -33,6 +33,14 @@ pip install -r requirements.txt --progress-bar off -U
 
 ## Training
 
+### Multi GPU Training (`torchrun`) (recommended)
+
+```sh
+torchrun \
+  --nproc_per_node 2 \
+  main.py config.yaml --backend nccl
+```
+
 ### Multi Node, Multi GPU Training (`torchrun`) (recommended)
 
 - Execute on master node
