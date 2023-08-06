@@ -85,19 +85,18 @@ def run(local_rank: int, config: Any):
     # for evaluation stats
     @trainer.on(Events.EPOCH_COMPLETED(every=1))
     def _():
-        evaluator.run(dataloader_eval, epoch_length=config.eval_epoch_length)
+        evaluator.run(dataloader_eval)
         log_metrics(evaluator, "eval")
 
     # let's try run evaluation first as a sanity check
     @trainer.on(Events.STARTED)
     def _():
-        evaluator.run(dataloader_eval, epoch_length=config.eval_epoch_length)
+        evaluator.run(dataloader_eval)
 
     # setup if done. let's run the training
     trainer.run(
         dataloader_train,
         max_epochs=config.max_epochs,
-        epoch_length=config.train_epoch_length,
     )
     # close logger
     if rank == 0:
@@ -120,6 +119,7 @@ def run(local_rank: int, config: Any):
 def main(cfg : DictConfig) -> None:
     print(OmegaConf.to_yaml(cfg))
     with idist.Parallel("nccl") as p:
+    # with idist.Parallel("gloo") as p:
         p.run(run, config=cfg)
 
 
